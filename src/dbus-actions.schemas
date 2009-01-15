@@ -1,0 +1,15 @@
+<gconfschemafile>
+	<schemalist>
+		<schema>
+			<key>/schemas/apps/dbus-actions/erase_on_device</key>
+			<applyto>/apps/dbus-actions/erase_on_device</applyto>
+			<owner>dbus-actions</owner>
+			<type>list</type>
+			<list_type>string</list_type>
+			<default>[]</default>
+			<locale name="C">
+				<short>List of enabled modules</short>
+			</locale>
+		</schema>
+	</schemalist>
+</gconfschemafile>
