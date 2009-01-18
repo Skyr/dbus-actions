@@ -3,8 +3,8 @@ import dbus
 import dbusactions.module
 
 class Module(dbusactions.module.Module):
-    def __init__(self,modulePath,updateModuleStatuses,systemBus,sessionBus):
-        super(Module,self).__init__(modulePath,updateModuleStatuses,systemBus,sessionBus)
+    def __init__(self,moduleParams):
+        super(Module,self).__init__(moduleParams)
         self.moduleName = "Holux GPS trigger"
         self.iconFilename = "holuxicon.png"
         self.interfaceList = [('org.freedesktop.Hal.Manager','DeviceAdded')]

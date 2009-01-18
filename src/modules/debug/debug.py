@@ -101,8 +101,8 @@ class DebugWindow(GladeWindow):
 
 
 class Module(dbusactions.module.Module):
-    def __init__(self,modulePath,updateModuleStatuses,systemBus,sessionBus):
-        super(Module,self).__init__(modulePath,updateModuleStatuses,systemBus,sessionBus)
+    def __init__(self,moduleParams):
+        super(Module,self).__init__(moduleParams)
         self.moduleName = "Monitor dbus messages"
         self.iconFilename = "debugicon.png"
         self.debugwindow=None

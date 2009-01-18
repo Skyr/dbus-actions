@@ -1,9 +1,9 @@
 import dbusactions.module
 
 class Module(dbusactions.module.Module):
-    def __init__(self,modulePath,updateModuleStatuses,systemBus,sessionBus):
+    def __init__(self,moduleParams):
         #dbusactions.module.Module.__init__(self,systemBus,sessionBus)
-        super(Module,self).__init__(modulePath,updateModuleStatuses,systemBus,sessionBus)
+        super(Module,self).__init__(moduleParams)
         self.moduleName = "Test module"
         #self.interfaceList = ['org.gnome.Tomboy.RemoteControl']
         self.interfaceList = [('im.pidgin.purple.PurpleInterface','ConversationSwitched')]

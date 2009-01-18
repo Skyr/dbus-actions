@@ -11,6 +11,7 @@ import egg.trayicon
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 from dbusactions.gladewindow import GladeWindow
+from dbusactions.module import ModuleParams
 
 
 def stockMenuItem(stockid, handler):
@@ -168,6 +169,6 @@ class Tray:
                     if os.path.exists(modulefile) and os.path.isfile(modulefile):
                         try:
                             module=imp.load_source(modulename,modulefile)
-                            self.modules[modulename]=module.Module(dir,self.updateModuleStatuses,self.systemBus,self.sessionBus)
+                            self.modules[modulename]=module.Module(ModuleParams(dir,self.updateModuleStatuses,self.systemBus,self.sessionBus))
                         except ImportError:
                             print("Unable to load module %s" % (modulefile))

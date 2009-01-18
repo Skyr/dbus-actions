@@ -2,14 +2,24 @@ import os
 import logging 
 import dbus
 
-class Module(object):
+
+class ModuleParams(object):
     def __init__(self,modulePath,updateModuleStatuses,systemBus,sessionBus):
-        self.isActive = False
-        self.updateModuleStatuses = updateModuleStatuses
-        self.modulePath = modulePath
+        self.modulePath=modulePath
+        self.updateModuleStatuses=updateModuleStatuses
         self.systemBus=systemBus
         self.sessionBus=sessionBus
-        self.logger=logging.getLogger("Module")
+
+
+
+class Module(object):
+    def __init__(self,moduleParams):
+        self.isActive = False
+        self.updateModuleStatuses = moduleParams.updateModuleStatuses
+        self.modulePath = moduleParams.modulePath
+        self.systemBus = moduleParams.systemBus
+        self.sessionBus = moduleParams.sessionBus
+        self.logger = logging.getLogger("Module")
         # Set in overridden constructor!
         self.iconFilename = None
         self.moduleName = "Abstract module"
