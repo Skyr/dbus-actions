@@ -16,9 +16,11 @@ class HardwareProperties(object):
         device=systemBus.get_object('org.freedesktop.Hal',deviceName)
         deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
         props=deviceIntf.GetAllProperties()
-        for k in props:
+        sortedkeys=props.keys()
+        sortedkeys.sort()
+        for k in sortedkeys:
             if not type(props[k]) in [dbus.Array,dbus.ByteArray,dbus.Dictionary]: 
-                self.properties.append((str(k),str(props[k]),False))
+                self.properties.append([str(k),str(props[k]),False])
 
 
 class CaptureDialog(GladeWindow):
@@ -50,7 +52,7 @@ class CaptureDialog(GladeWindow):
 
     def newHardware(self,deviceName):
         self.hw.append(HardwareProperties(self.module.systemBus,deviceName))
-        self.cbHardware.append_text(self.hw[-1].deviceName)
+        self.cbHardware.append_text(self.hw[-1].deviceId)
         if (self.cbHardware.get_active()<0):
             self.cbHardware.set_active(0)
     
@@ -58,12 +60,23 @@ class CaptureDialog(GladeWindow):
         self.numPropsChecked=0
         if self.cbHardware.get_active()>=0:
             hwnum=self.cbHardware.get_active()
-            
+            self.propList.clear()
+            for p in self.hw[hwnum].properties:
+                self.propList.append([p[2],"%s=%s" % (p[0],p[1])])
+                if p[2]:
+                    self.numPropsChecked=self.numPropsChecked+1
         self.btnOk.set_sensitive(self.numPropsChecked>0)
     
     def on_column_toggled(self,widget,path):
-        #self.moduleList.set(self.moduleList.get_iter(path),0,newstate)
-        print path
+        hwnum=self.cbHardware.get_active()
+        propnum=int(path)
+        newstate=not self.hw[hwnum].properties[propnum][2]
+        self.propList.set(self.propList.get_iter(path),0,newstate)
+        self.hw[hwnum].properties[propnum][2]=newstate
+        if newstate:
+            self.numPropsChecked=self.numPropsChecked+1
+        else:
+            self.numPropsChecked=self.numPropsChecked-1
         self.btnOk.set_sensitive(self.numPropsChecked>0)
 
     def on_btnOk_clicked(self,widget):
