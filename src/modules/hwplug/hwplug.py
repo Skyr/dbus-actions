@@ -2,6 +2,7 @@ import os
 import commands
 import gobject
 import gtk
+import gconf
 import dbus
 import dbusactions.module
 from dbusactions.gladewindow import GladeWindow
@@ -33,9 +34,9 @@ class CaptureDialog(GladeWindow):
 
 
 class ConfigDialog(GladeWindow):
-    def __init__(self,modulePath,parentWidget):
-        super(ConfigDialog,self).__init__(os.path.join(modulePath,"configdialog.glade"),"dialogHwPlugConfig",parentWidget)
-        self.modulePath=modulePath
+    def __init__(self,module,parentWidget):
+        super(ConfigDialog,self).__init__(os.path.join(module.modulePath,"configdialog.glade"),"dialogHwPlugConfig",parentWidget)
+        self.module=module
         # Set up list columns
         col=gtk.TreeViewColumn("Trigger",gtk.CellRendererText(),text=0)
         self.triggerView.append_column(col)
@@ -43,8 +44,8 @@ class ConfigDialog(GladeWindow):
         self.triggerList=gtk.ListStore(gobject.TYPE_STRING)
         self.triggerView.set_model(self.triggerList)        
         # Insert trigger data
-        self.triggerList.append(["Foo"])
-        self.triggerList.append(["Bar"])
+        for t in module.triggers:
+            self.triggerList.append([t.name])
     
     def on_btnOk_clicked(self,widget):
         self.dialogHwPlugConfig.destroy()
@@ -54,13 +55,43 @@ class ConfigDialog(GladeWindow):
         self.btnDel.set_sensitive(True)
 
     def on_btnAdd_clicked(self,widget):
-        capturedlg=CaptureDialog(self.modulePath,self.dialogHwPlugConfig)
-        capturedlg.dialogCapture.run()
+        capturedlg=CaptureDialog(self.module.modulePath,self.dialogHwPlugConfig)
+        result=capturedlg.dialogCapture.run()
         capturedlg.dialogCapture.destroy()
+        print result
     
     def on_btnDel_clicked(self,widget):
         print self.triggerView.get_cursor()[0][0]
 
+
+class TriggerData(object):
+    def __init__(self,confPath,schemaName):
+        self.confPath=confPath
+        self.schemaName=schemaName
+        self.name=None
+        self.conditions=[]
+        self.command=None
+
+    def load(self,conf):
+        self.name=None
+        self.conditions=[]
+        self.command=None
+        if conf.dir_exists(self.confPath):
+            self.name=conf.get_string(self.confPath+"/name")
+            self.conditions=conf.get_list(self.confPath+"/conditions",gconf.VALUE_STRING)
+            self.command=conf.get_string(self.confPath+"/command")
+    
+    def store(self,conf):
+        conf.set_string(self.confPath+"/name",self.name)
+        conf.set_list(self.confPath+"/conditions",gconf.VALUE_STRING,self.conditions)
+        conf.set_string(self.confPath+"/command",self.command)
+        conf.set_schema(self.confPath,self.schemaName)
+    
+    def delete(self,conf):
+        if conf.dir_exists(self.confPath):
+            conf.recursive_unset(self.confPath,gconf.UNSET_INCLUDING_SCHEMA_NAMES)
+            conf.remove_dir(self.confPath)
+            
 
 class Module(dbusactions.module.Module):
     def __init__(self,moduleParams):
@@ -69,12 +100,19 @@ class Module(dbusactions.module.Module):
         self.iconFilename = "hwplugicon.png"
         self.interfaceList = [('org.freedesktop.Hal.Manager','DeviceAdded')]
         self.configuring = False
+        self.triggers = []
+
+    def loadTriggers(self):
+        if self.conf.dir_exists(self.confAppKey+"/hwplug"):
+            for t in self.conf.all_dirs(self.confAppKey+"/hwplug"):
+                self.triggers.append(TriggerData(t,"/schemas"+self.confAppKey+"/hwplug/trigger"))
+                self.triggers[-1].load(self.conf)
 
     def isConfigurable(self):
         return True
     
     def configureDialog(self,parentWidget):
-        cfgdlg=ConfigDialog(self.modulePath,parentWidget)
+        cfgdlg=ConfigDialog(self,parentWidget)
         cfgdlg.dialogHwPlugConfig.run()
         cfgdlg.dialogHwPlugConfig.destroy()
 
