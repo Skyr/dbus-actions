@@ -8,10 +8,15 @@ import dbusactions.module
 from dbusactions.gladewindow import GladeWindow
 
 
+class HardwareProperties(object):
+    def __init__(self,systemBus,hwPath):
+        pass
+
+
 class CaptureDialog(GladeWindow):
     def __init__(self,modulePath,parentWidget):
         super(CaptureDialog,self).__init__(os.path.join(modulePath,"capturedialog.glade"),"dialogCapture",parentWidget)
-        # Set up list columns
+        # Set up list columns for properties
         crt=gtk.CellRendererToggle()
         crt.set_active(True)
         crt.connect("toggled",self.on_column_toggled)
@@ -20,17 +25,35 @@ class CaptureDialog(GladeWindow):
         self.propView.append_column(col)
         col=gtk.TreeViewColumn("Property",gtk.CellRendererText(),text=1)
         self.propView.append_column(col)
-        # Set up storage model
+        # Set up storage model for properties
         self.propList=gtk.ListStore(gobject.TYPE_BOOLEAN,gobject.TYPE_STRING)
-        self.propView.set_model(self.propList)        
+        self.propView.set_model(self.propList)
+        # Set up list columns for hw objects
+        col=gtk.CellRendererText()
+        self.cbHardware.pack_start(col,True)
+        self.cbHardware.add_attribute(col,"text",0)
+        # Set up storage model for hw objects
+        self.hwList=gtk.ListStore(gobject.TYPE_STRING)
+        self.cbHardware.set_model(self.hwList)        
         # Insert trigger data
         self.propList.append([True,"Foo=0"])
         self.propList.append([False,"Bar=42"])
+        self.cbHardware.append_text("hw Foo")
+        self.cbHardware.append_text("hw Bar")
+    
+    def on_cbHardware_changed(self,widget):
+        self.btnOk.set_sensitive(False)
+        if self.cbHardware.get_active()>=0:
+            # Fill propList
+            print self.cbHardware.get_active()
     
     def on_column_toggled(self,widget,path):
         #self.moduleList.set(self.moduleList.get_iter(path),0,newstate)
         print path
         pass
+
+    def on_btnOk_clicked(self,widget):
+        self.dialogCapture.response(gtk.RESPONSE_OK)
 
 
 class ConfigDialog(GladeWindow):
@@ -38,7 +61,7 @@ class ConfigDialog(GladeWindow):
         super(ConfigDialog,self).__init__(os.path.join(module.modulePath,"configdialog.glade"),"dialogHwPlugConfig",parentWidget)
         self.module=module
         # Set up list columns
-        col=gtk.TreeViewColumn("Trigger",gtk.CellRendererText(),text=0)
+        col=gtk.TreeViewColumn("Trigger name",gtk.CellRendererText(),text=0)
         self.triggerView.append_column(col)
         # Set up storage model
         self.triggerList=gtk.ListStore(gobject.TYPE_STRING)
@@ -47,18 +70,15 @@ class ConfigDialog(GladeWindow):
         for t in module.triggers:
             self.triggerList.append([t.name])
     
-    def on_btnOk_clicked(self,widget):
-        self.dialogHwPlugConfig.destroy()
-
     def on_triggerView_cursor_changed(self,widget):
         #self.triggerView.get_cursor()[0][0]
         self.btnDel.set_sensitive(True)
 
     def on_btnAdd_clicked(self,widget):
         capturedlg=CaptureDialog(self.module.modulePath,self.dialogHwPlugConfig)
-        result=capturedlg.dialogCapture.run()
+        if capturedlg.dialogCapture.run()==gtk.RESPONSE_OK:
+            print "Ok!"
         capturedlg.dialogCapture.destroy()
-        print result
     
     def on_btnDel_clicked(self,widget):
         print self.triggerView.get_cursor()[0][0]

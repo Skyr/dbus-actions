@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sun Jan 18 16:14:36 2009 -->
+<!--Generated with glade3 3.4.5 on Mon Jan 19 12:11:33 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="dialogHwPlugConfig">
     <property name="border_width">5</property>
@@ -92,7 +92,6 @@
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
-                <signal name="clicked" handler="on_btnOk_clicked"/>
               </widget>
             </child>
           </widget>

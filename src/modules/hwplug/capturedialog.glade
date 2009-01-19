@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
-<!--Generated with glade3 3.4.5 on Sun Jan 18 23:02:12 2009 -->
+<!--Generated with glade3 3.4.5 on Mon Jan 19 14:09:02 2009 -->
 <glade-interface>
   <widget class="GtkDialog" id="dialogCapture">
     <property name="border_width">5</property>
@@ -32,20 +32,11 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkComboBoxEntry" id="cbentryHWObject">
+                  <widget class="GtkComboBox" id="cbHardware">
                     <property name="visible">True</property>
-                    <property name="text_column">1</property>
-                    <signal name="changed" handler="on_cbentryHWObject_changed"/>
-                    <child internal-child="entry">
-                      <widget class="GtkEntry" id="comboboxentry-entry1">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="editable">False</property>
-                      </widget>
-                    </child>
+                    <signal name="changed" handler="on_cbHardware_changed"/>
                   </widget>
                   <packing>
-                    <property name="pack_type">GTK_PACK_END</property>
                     <property name="position">1</property>
                   </packing>
                 </child>
@@ -132,6 +123,7 @@
             <child>
               <widget class="GtkButton" id="btnOk">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
@@ -139,6 +131,7 @@
                 <property name="label" translatable="yes">gtk-ok</property>
                 <property name="use_stock">True</property>
                 <property name="response_id">0</property>
+                <signal name="clicked" handler="on_btnOk_clicked"/>
               </widget>
               <packing>
                 <property name="position">1</property>
