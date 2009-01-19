@@ -96,11 +96,11 @@ class Tray:
         self.sessionBus = dbus.SessionBus(mainloop=DBusGMainLoop())
         self.configWindow = None
         # Scan modules
+        self.conf = gconf.client_get_default()
         self.modules={}
         self.scanModules(self.globalOptions["globalModulesDir"])
         self.scanModules(self.globalOptions["localModulesDir"])
         # Load global settings
-        self.conf = gconf.client_get_default()
         self.loadSettings()
         # Tray menu
         self.trayMenu = gtk.Menu()
@@ -169,6 +169,6 @@ class Tray:
                     if os.path.exists(modulefile) and os.path.isfile(modulefile):
                         try:
                             module=imp.load_source(modulename,modulefile)
-                            self.modules[modulename]=module.Module(ModuleParams(dir,self.updateModuleStatuses,self.systemBus,self.sessionBus))
+                            self.modules[modulename]=module.Module(ModuleParams(dir,self.confAppKey,self.conf,self.updateModuleStatuses,self.systemBus,self.sessionBus))
                         except ImportError:
                             print("Unable to load module %s" % (modulefile))

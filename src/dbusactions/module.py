@@ -4,18 +4,21 @@ import dbus
 
 
 class ModuleParams(object):
-    def __init__(self,modulePath,updateModuleStatuses,systemBus,sessionBus):
+    def __init__(self,modulePath,confAppKey,conf,updateModuleStatuses,systemBus,sessionBus):
         self.modulePath=modulePath
+        self.confAppKey = confAppKey
+        self.conf = conf
         self.updateModuleStatuses=updateModuleStatuses
         self.systemBus=systemBus
         self.sessionBus=sessionBus
-
 
 
 class Module(object):
     def __init__(self,moduleParams):
         self.isActive = False
         self.updateModuleStatuses = moduleParams.updateModuleStatuses
+        self.confAppKey = moduleParams.confAppKey
+        self.conf = moduleParams.conf
         self.modulePath = moduleParams.modulePath
         self.systemBus = moduleParams.systemBus
         self.sessionBus = moduleParams.sessionBus
