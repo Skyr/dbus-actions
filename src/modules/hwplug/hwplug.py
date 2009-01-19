@@ -9,13 +9,22 @@ from dbusactions.gladewindow import GladeWindow
 
 
 class HardwareProperties(object):
-    def __init__(self,systemBus,hwPath):
-        pass
+    def __init__(self,systemBus,deviceName):
+        self.deviceId=deviceName[deviceName.rfind("/")+1:]
+        self.properties=[]
+        # Get properties from DBus
+        device=systemBus.get_object('org.freedesktop.Hal',deviceName)
+        deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
+        props=deviceIntf.GetAllProperties()
+        for k in props:
+            if not type(props[k]) in [dbus.Array,dbus.ByteArray,dbus.Dictionary]: 
+                self.properties.append((str(k),str(props[k]),False))
 
 
 class CaptureDialog(GladeWindow):
-    def __init__(self,modulePath,parentWidget):
-        super(CaptureDialog,self).__init__(os.path.join(modulePath,"capturedialog.glade"),"dialogCapture",parentWidget)
+    def __init__(self,module,parentWidget):
+        super(CaptureDialog,self).__init__(os.path.join(module.modulePath,"capturedialog.glade"),"dialogCapture",parentWidget)
+        self.module=module
         # Set up list columns for properties
         crt=gtk.CellRendererToggle()
         crt.set_active(True)
@@ -35,22 +44,27 @@ class CaptureDialog(GladeWindow):
         # Set up storage model for hw objects
         self.hwList=gtk.ListStore(gobject.TYPE_STRING)
         self.cbHardware.set_model(self.hwList)        
-        # Insert trigger data
-        self.propList.append([True,"Foo=0"])
-        self.propList.append([False,"Bar=42"])
-        self.cbHardware.append_text("hw Foo")
-        self.cbHardware.append_text("hw Bar")
+        # At start: No hw
+        self.hw=[]
+        self.numPropsChecked=0
+
+    def newHardware(self,deviceName):
+        self.hw.append(HardwareProperties(self.module.systemBus,deviceName))
+        self.cbHardware.append_text(self.hw[-1].deviceName)
+        if (self.cbHardware.get_active()<0):
+            self.cbHardware.set_active(0)
     
     def on_cbHardware_changed(self,widget):
-        self.btnOk.set_sensitive(False)
+        self.numPropsChecked=0
         if self.cbHardware.get_active()>=0:
-            # Fill propList
-            print self.cbHardware.get_active()
+            hwnum=self.cbHardware.get_active()
+            
+        self.btnOk.set_sensitive(self.numPropsChecked>0)
     
     def on_column_toggled(self,widget,path):
         #self.moduleList.set(self.moduleList.get_iter(path),0,newstate)
         print path
-        pass
+        self.btnOk.set_sensitive(self.numPropsChecked>0)
 
     def on_btnOk_clicked(self,widget):
         self.dialogCapture.response(gtk.RESPONSE_OK)
@@ -75,9 +89,16 @@ class ConfigDialog(GladeWindow):
         self.btnDel.set_sensitive(True)
 
     def on_btnAdd_clicked(self,widget):
-        capturedlg=CaptureDialog(self.module.modulePath,self.dialogHwPlugConfig)
+        capturedlg=CaptureDialog(self.module,self.dialogHwPlugConfig)
+        moduleActive=self.module.isActive
+        self.module.configNewHardware=capturedlg.newHardware
+        if not moduleActive:
+            self.module.activate()
         if capturedlg.dialogCapture.run()==gtk.RESPONSE_OK:
             print "Ok!"
+        if not moduleActive:
+            self.module.deactivate()
+        self.module.configNewHardware=None
         capturedlg.dialogCapture.destroy()
     
     def on_btnDel_clicked(self,widget):
@@ -119,7 +140,7 @@ class Module(dbusactions.module.Module):
         self.moduleName = '"Device added" trigger'
         self.iconFilename = "hwplugicon.png"
         self.interfaceList = [('org.freedesktop.Hal.Manager','DeviceAdded')]
-        self.configuring = False
+        self.configNewHardware = None
         self.triggers = []
 
     def loadTriggers(self):
@@ -140,18 +161,10 @@ class Module(dbusactions.module.Module):
         # Argument 0: Object name of new device
         deviceName=args[0]
         # Get object properties
-        device=self.systemBus.get_object('org.freedesktop.Hal',deviceName)
-        deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
-        if self.configuring:
-            pass
+        HardwareProperties(self.systemBus,deviceName)
+        #device=self.systemBus.get_object('org.freedesktop.Hal',deviceName)
+        #deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
+        if self.configNewHardware:
+            self.configNewHardware(deviceName)
         else:
-            if deviceIntf.PropertyExists("serial.device"):
-                if deviceIntf.PropertyExists("info.parent"):
-                    parentDeviceName=deviceIntf.GetPropertyString("info.parent")
-                    parentDevice=self.systemBus.get_object('org.freedesktop.Hal',parentDeviceName)
-                    parentDeviceIntf=dbus.Interface(parentDevice,dbus_interface='org.freedesktop.Hal.Device')
-                    if parentDeviceIntf.PropertyExists("usb.vendor_id") and parentDeviceIntf.PropertyExists("usb.product_id") and \
-                        parentDeviceIntf.GetPropertyInteger("usb.vendor_id")==4292 and parentDeviceIntf.GetPropertyInteger("usb.product_id")==60000:
-                        cmd="/home/sts/source/gpslog-downloader/src/gpslog-downloader.py -d %s" % deviceIntf.GetPropertyString("serial.device")
-                        self.logger.debug("Executing %s" % cmd)
-                        result=commands.getstatusoutput(cmd)
+            pass
