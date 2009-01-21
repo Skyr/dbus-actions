@@ -23,6 +23,42 @@ class HardwareProperties(object):
                 self.properties.append([str(k),str(props[k]),False])
 
 
+class TriggerData(object):
+    def __init__(self,schemaName,confBasePath,confPath=None,hwProperties=None):
+        assert(confPath!=None or hwProperties!=None)
+        self.confPath=confPath
+        self.schemaName=schemaName
+        self.name=None
+        self.conditions=[]
+        self.command=None
+        if hwProperties!=None:
+            self.confPath=confBasePath+"/"+hwProperties.deviceId
+            for p in hwProperties.properties:
+                if p[2]:
+                    self.conditions.append("%s=%s" % (p[0],p[1]))
+
+    def load(self,conf):
+        self.name=None
+        self.conditions=[]
+        self.command=None
+        if conf.dir_exists(self.confPath):
+            self.name=conf.get_string(self.confPath+"/name")
+            self.conditions=conf.get_list(self.confPath+"/conditions",gconf.VALUE_STRING)
+            self.command=conf.get_string(self.confPath+"/command")
+    
+    def store(self,conf):
+        conf.set_string(self.confPath+"/name",self.name)
+        conf.set_list(self.confPath+"/conditions",gconf.VALUE_STRING,self.conditions)
+        conf.set_string(self.confPath+"/command",self.command)
+        #TODO: Set schema
+        #conf.set_schema(self.confPath,self.schemaName) 
+    
+    def delete(self,conf):
+        if conf.dir_exists(self.confPath):
+            conf.recursive_unset(self.confPath,gconf.UNSET_INCLUDING_SCHEMA_NAMES)
+            conf.remove_dir(self.confPath)
+            
+
 class CaptureDialog(GladeWindow):
     def __init__(self,module,parentWidget):
         super(CaptureDialog,self).__init__(os.path.join(module.modulePath,"capturedialog.glade"),"dialogCapture",parentWidget)
@@ -94,7 +130,7 @@ class ConfigDialog(GladeWindow):
         self.triggerList=gtk.ListStore(gobject.TYPE_STRING)
         self.triggerView.set_model(self.triggerList)        
         # Insert trigger data
-        for t in module.triggers:
+        for t in self.module.triggers:
             self.triggerList.append([t.name])
     
     def on_triggerView_cursor_changed(self,widget):
@@ -108,7 +144,12 @@ class ConfigDialog(GladeWindow):
         if not moduleActive:
             self.module.activate()
         if capturedlg.dialogCapture.run()==gtk.RESPONSE_OK:
-            print "Ok!"
+            newTrigger=TriggerData(self.module.triggerSchemaName,self.module.moduleAppKey,hwProperties=capturedlg.hw[capturedlg.cbHardware.get_active()])
+            newTrigger.name=capturedlg.entryRulename.get_text()
+            newTrigger.command=capturedlg.entryCmd.get_text()
+            newTrigger.store(self.module.conf)
+            self.module.triggers.append(newTrigger)
+            self.triggerList.append([newTrigger.name])
         if not moduleActive:
             self.module.deactivate()
         self.module.configNewHardware=None
@@ -118,35 +159,6 @@ class ConfigDialog(GladeWindow):
         print self.triggerView.get_cursor()[0][0]
 
 
-class TriggerData(object):
-    def __init__(self,confPath,schemaName):
-        self.confPath=confPath
-        self.schemaName=schemaName
-        self.name=None
-        self.conditions=[]
-        self.command=None
-
-    def load(self,conf):
-        self.name=None
-        self.conditions=[]
-        self.command=None
-        if conf.dir_exists(self.confPath):
-            self.name=conf.get_string(self.confPath+"/name")
-            self.conditions=conf.get_list(self.confPath+"/conditions",gconf.VALUE_STRING)
-            self.command=conf.get_string(self.confPath+"/command")
-    
-    def store(self,conf):
-        conf.set_string(self.confPath+"/name",self.name)
-        conf.set_list(self.confPath+"/conditions",gconf.VALUE_STRING,self.conditions)
-        conf.set_string(self.confPath+"/command",self.command)
-        conf.set_schema(self.confPath,self.schemaName)
-    
-    def delete(self,conf):
-        if conf.dir_exists(self.confPath):
-            conf.recursive_unset(self.confPath,gconf.UNSET_INCLUDING_SCHEMA_NAMES)
-            conf.remove_dir(self.confPath)
-            
-
 class Module(dbusactions.module.Module):
     def __init__(self,moduleParams):
         super(Module,self).__init__(moduleParams)
@@ -155,11 +167,14 @@ class Module(dbusactions.module.Module):
         self.interfaceList = [('org.freedesktop.Hal.Manager','DeviceAdded')]
         self.configNewHardware = None
         self.triggers = []
+        self.triggerSchemaName = "/schemas"+self.confAppKey+"/hwplug/trigger"
+        self.moduleAppKey = self.confAppKey+"/hwplug"
+        self.loadTriggers()
 
     def loadTriggers(self):
         if self.conf.dir_exists(self.confAppKey+"/hwplug"):
             for t in self.conf.all_dirs(self.confAppKey+"/hwplug"):
-                self.triggers.append(TriggerData(t,"/schemas"+self.confAppKey+"/hwplug/trigger"))
+                self.triggers.append(TriggerData(self.triggerSchemaName,self.moduleAppKey,t))
                 self.triggers[-1].load(self.conf)
 
     def isConfigurable(self):
