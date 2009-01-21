@@ -9,11 +9,13 @@ from dbusactions.gladewindow import GladeWindow
 
 
 class HardwareProperties(object):
-    def __init__(self,systemBus,deviceName):
+    def __init__(self,deviceName):
+        self.deviceName=deviceName
         self.deviceId=deviceName[deviceName.rfind("/")+1:]
         self.properties=[]
-        # Get properties from DBus
-        device=systemBus.get_object('org.freedesktop.Hal',deviceName)
+    
+    def getProperties(self,systemBus):
+        device=systemBus.get_object('org.freedesktop.Hal',self.deviceName)
         deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
         props=deviceIntf.GetAllProperties()
         sortedkeys=props.keys()
@@ -22,6 +24,11 @@ class HardwareProperties(object):
             if not type(props[k]) in [dbus.Array,dbus.ByteArray,dbus.Dictionary]: 
                 self.properties.append([str(k),str(props[k]),False])
 
+    def copyFromTriggerData(self,triggerData):
+        for cond in triggerData.conditions:
+            c=cond.split("=",1)
+            self.properties.append([c[0],c[1],True])
+    
 
 class TriggerData(object):
     def __init__(self,schemaName,confBasePath,confPath=None,hwProperties=None):
@@ -86,11 +93,16 @@ class CaptureDialog(GladeWindow):
         self.hw=[]
         self.numPropsChecked=0
 
-    def newHardware(self,deviceName):
-        self.hw.append(HardwareProperties(self.module.systemBus,deviceName))
+    def appendHardwareProps(self,hwProps):
+        self.hw.append(hwProps)
         self.cbHardware.append_text(self.hw[-1].deviceId)
         if (self.cbHardware.get_active()<0):
             self.cbHardware.set_active(0)
+        
+    def newHardware(self,deviceName):
+        hwProps=HardwareProperties(deviceName)
+        hwProps.getProperties(self.module.systemBus)
+        self.appendHardwareProps(hwProps)
     
     def on_cbHardware_changed(self,widget):
         self.numPropsChecked=0
@@ -133,9 +145,14 @@ class ConfigDialog(GladeWindow):
         for t in self.module.triggers:
             self.triggerList.append([t.name])
     
+    def checkButtons(self):
+        active=self.triggerView.get_cursor()[0]!=None
+        self.btnEdit.set_sensitive(active)
+        self.btnDel.set_sensitive(active)
+            
     def on_triggerView_cursor_changed(self,widget):
         #self.triggerView.get_cursor()[0][0]
-        self.btnDel.set_sensitive(True)
+        self.checkButtons()
 
     def on_btnAdd_clicked(self,widget):
         capturedlg=CaptureDialog(self.module,self.dialogHwPlugConfig)
@@ -155,8 +172,31 @@ class ConfigDialog(GladeWindow):
         self.module.configNewHardware=None
         capturedlg.dialogCapture.destroy()
     
+    def on_btnEdit_clicked(self,widget):
+        num=int(self.triggerView.get_cursor()[0][0])
+        if num>=0 and num<len(self.module.triggers):
+            props=HardwareProperties("")
+            props.copyFromTriggerData(self.module.triggers[num])
+            capturedlg=CaptureDialog(self.module,self.dialogHwPlugConfig)
+            capturedlg.appendHardwareProps(props)
+            capturedlg.entryRulename.set_text(self.module.triggers[num].name)
+            capturedlg.entryCmd.set_text(self.module.triggers[num].command)
+            capturedlg.cbHardware.set_sensitive(False)
+            capturedlg.propView.set_sensitive(False)
+            if capturedlg.dialogCapture.run()==gtk.RESPONSE_OK:
+                self.module.triggers[num].name=capturedlg.entryRulename.get_text()
+                self.module.triggers[num].command=capturedlg.entryCmd.get_text()
+                self.module.triggers[num].store(self.module.conf)
+                self.triggerList.set(self.triggerList.get_iter(num),0,self.module.triggers[num].name)
+            capturedlg.dialogCapture.destroy()
+
     def on_btnDel_clicked(self,widget):
-        print self.triggerView.get_cursor()[0][0]
+        num=int(self.triggerView.get_cursor()[0][0])
+        if num>=0 and num<len(self.module.triggers):
+            self.triggerList.remove(self.triggerList.get_iter(num))
+            self.module.triggers[num].delete(self.module.conf)
+            del(self.module.triggers[num])
+            self.checkButtons()
 
 
 class Module(dbusactions.module.Module):
@@ -176,6 +216,8 @@ class Module(dbusactions.module.Module):
             for t in self.conf.all_dirs(self.confAppKey+"/hwplug"):
                 self.triggers.append(TriggerData(self.triggerSchemaName,self.moduleAppKey,t))
                 self.triggers[-1].load(self.conf)
+                if self.triggers[-1].name==None:
+                    del(self.triggers[-1])
 
     def isConfigurable(self):
         return True
@@ -188,10 +230,6 @@ class Module(dbusactions.module.Module):
     def dbusSystemEvent(self, *args, **keywordArgs):
         # Argument 0: Object name of new device
         deviceName=args[0]
-        # Get object properties
-        HardwareProperties(self.systemBus,deviceName)
-        #device=self.systemBus.get_object('org.freedesktop.Hal',deviceName)
-        #deviceIntf=dbus.Interface(device,dbus_interface='org.freedesktop.Hal.Device')
         if self.configNewHardware:
             self.configNewHardware(deviceName)
         else:
