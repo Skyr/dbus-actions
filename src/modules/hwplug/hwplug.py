@@ -24,6 +24,12 @@ class HardwareProperties(object):
             if not type(props[k]) in [dbus.Array,dbus.ByteArray,dbus.Dictionary]: 
                 self.properties.append([str(k),str(props[k]),False])
 
+    def propertyMatch(self,prop,val):
+        for p in self.properties:
+            if p[0]==prop:
+                return (p[1]==val)
+        return False
+
     def copyFromTriggerData(self,triggerData):
         for cond in triggerData.conditions:
             c=cond.split("=",1)
@@ -233,4 +239,15 @@ class Module(dbusactions.module.Module):
         if self.configNewHardware:
             self.configNewHardware(deviceName)
         else:
-            pass
+            hwprops=HardwareProperties(deviceName)
+            hwprops.getProperties(self.systemBus)
+            for trigger in self.triggers:
+                match=True
+                for cond in trigger.conditions:
+                    c=cond.split("=",1)
+                    if not hwprops.propertyMatch(c[0],c[1]):
+                        match=False
+                if match:
+                    self.logger.debug("Trigger '%s' matches. Executing '%s'" % (trigger.name,trigger.command))
+                    result=commands.getstatusoutput(trigger.command)
+                    self.logger.debug("%s" % result[1])
