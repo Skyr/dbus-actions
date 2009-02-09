@@ -84,7 +84,7 @@ class ConfigWindow(GladeWindow):
 
 
 class Tray:
-    def __init__(self):
+    def __init__(self,deactivateModules):
         # Initialize global options
         self.confAppKey = "/apps/dbus-actions"
         self.globalOptions = {
@@ -101,7 +101,8 @@ class Tray:
         self.scanModules(self.globalOptions["globalModulesDir"])
         self.scanModules(self.globalOptions["localModulesDir"])
         # Load global settings
-        self.loadSettings()
+        if not deactivateModules:
+            self.loadSettings()
         # Tray menu
         self.trayMenu = gtk.Menu()
         self.trayMenu.add(menuItem("Configure",self.trayMenu_config_activate))
