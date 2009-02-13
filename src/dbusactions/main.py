@@ -85,10 +85,14 @@ class ConfigWindow(GladeWindow):
 
 class Tray:
     def __init__(self,deactivateModules):
+        # Determine app data path: Must contain configwindow.glade
+        appDataPath = os.path.dirname(sys.argv[0])
+        if not os.path.exists(os.path.join(appDataPath,"configwindow.glade")):
+            appDataPath = "/usr/share/dbusactions"
         # Initialize global options
         self.confAppKey = "/apps/dbus-actions"
         self.globalOptions = {
-            "appDataPath" : os.path.dirname(sys.argv[0]),
+            "appDataPath" : appDataPath,
             "localModulesDir" : os.path.join(os.getenv("HOME"),".dbus-actions"),
         }
         self.globalOptions["globalModulesDir"]=os.path.join(self.globalOptions["appDataPath"],"modules")
