@@ -1,3 +1,3 @@
-include setup.py dbus-actions.py *.glade *.schemas
+include setup.py dbus-actions.py trayicon.png *.glade *.schemas
 recursive-include dbusactions *.py
 recursive-include modules *.py *.glade *.schemas *.png
