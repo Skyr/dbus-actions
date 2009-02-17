@@ -1,0 +1,70 @@
+<gconfschemafile>
+	<schemalist>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/erase_on_device</key>
+			<applyto>/apps/gpslog-downloader/erase_on_device</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>bool</type>
+			<default>true</default>
+			<locale name="C">
+				<short>Erase data on external device</short>
+				<long>After downloading, delete the data from the external device</long>
+			</locale>
+		</schema>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/download_cmd</key>
+			<applyto>/apps/gpslog-downloader/download_cmd</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>string</type>
+			<default>/usr/bin/gpsbabel foo</default>
+			<locale name="C">
+				<short>External command for downloading data</short>
+				<long>This command is executed in order to download data from the external device. Use %s for the destination filename.</long>
+			</locale>
+		</schema>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/erase_cmd</key>
+			<applyto>/apps/gpslog-downloader/erase_cmd</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>string</type>
+			<default>/usr/bin/gpsbabel foo</default>
+			<locale name="C">
+				<short>External command for erasing data</short>
+				<long>This command is executed in order to erase data from the external device</long>
+			</locale>
+		</schema>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/data_path</key>
+			<applyto>/apps/gpslog-downloader/data_path</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>string</type>
+			<default>/tmp</default>
+			<locale name="C">
+				<short>Path where to store data</short>
+				<long>Full qualified path where to store the downloaded data</long>
+			</locale>
+		</schema>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/data_filename_template</key>
+			<applyto>/apps/gpslog-downloader/data_filename_template</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>string</type>
+			<default>gpsdata-%Y%m%d.gpx</default>
+			<locale name="C">
+				<short>Template for destination filename</short>
+				<long>Template string for the data's filename; will be passed to Python's strftime()</long>
+			</locale>
+		</schema>
+		<schema>
+			<key>/schemas/apps/gpslog-downloader/default_device</key>
+			<applyto>/apps/gpslog-downloader/default_device</applyto>
+			<owner>gpslog-downloader</owner>
+			<type>string</type>
+			<default>/dev/ttyUSB0</default>
+			<locale name="C">
+				<short>Default device name</short>
+				<long>The default devicename for the external device - used if no devicename is given via command line</long>
+			</locale>
+		</schema>
+	</schemalist>	
+</gconfschemafile>
