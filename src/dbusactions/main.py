@@ -171,15 +171,13 @@ class Tray:
                 if os.path.isdir(dir):
                     modulename=os.path.basename(dir)
                     modulepath=dir
-                    modulefile=os.path.join(dir,"%s.py" % (modulename))
+                    modulefile=os.path.join(dir,"__init__.py")
                     if os.path.exists(modulefile) and os.path.isfile(modulefile):
                         try:
-                            # Load base module
+                            # Load module
                             file,filename,description = imp.find_module("%s" % (modulename),[path])
                             module=imp.load_module("%s" % (modulename),file,filename,description)
-                            # Load main submodule
-                            file,filename,description = imp.find_module("%s" % (modulename),[modulepath])
-                            module=imp.load_module("%s.%s" % (modulename,modulename),file,filename,description)
+                            # Get instance (class name must be Module)
                             self.modules[modulename]=module.Module(ModuleParams(dir,self.confAppKey,self.conf,self.updateModuleStatuses,self.systemBus,self.sessionBus))
                         except ImportError:
                             print("Unable to load module %s: %s" % (modulefile))
