@@ -120,6 +120,7 @@ class Tray:
         self.trayEventBox = gtk.EventBox()
         self.trayEventBox.set_events(gtk.gdk.BUTTON_PRESS_MASK | gtk.gdk.POINTER_MOTION_MASK | gtk.gdk.POINTER_MOTION_HINT_MASK | gtk.gdk.CONFIGURE)
         self.trayEventBox.add(self.trayIconImage)
+        self.trayEventBox.set_tooltip_text("DBus Actions")
         self.trayEventBox.connect("button_press_event",self.trayEventBox_face_click)
         # Assemble tray icon
         self.trayicon = egg.trayicon.TrayIcon("DBus Actions")
@@ -164,6 +165,11 @@ class Tray:
     def updateModuleStatuses(self):
         if self.configWindow:
             self.configWindow.updateModuleStatuses()
+            cnt=0
+            for module in self.modules.keys():
+                if self.modules[module].isActive:
+                    cnt=cnt+1
+            self.trayEventBox.set_tooltip_text("DBus Actions\nActive modules: %d" % cnt)
 
     def scanModules(self, path):
         if os.path.exists(path) and os.path.isdir(path):
