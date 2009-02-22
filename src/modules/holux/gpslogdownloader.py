@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# DBus-Actions - a tray application containing modules listening to dbus events
+# gpslogdownloader - module/standalone app for a small GUI wrapper for gpsbabel, etc.
+# Copyright (C) 2009 by Stefan Schlott
+# Published under the GNU Public License V2 (GPL-2)
+
 
 # Register schemas with: gconftool-2 --install-schema-file gpslog-downloader.schemas
 

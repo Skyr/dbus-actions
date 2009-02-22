@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+# DBus-Actions - a tray application containing modules listening to dbus events
+# Copyright (C) 2009 by Stefan Schlott
+# Published under the GNU Public License V2 (GPL-2)
+
+
 import logging 
 try:
     import pygtk

@@ -11,6 +11,9 @@ class ModuleParams(object):
         self.updateModuleStatuses=updateModuleStatuses
         self.systemBus=systemBus
         self.sessionBus=sessionBus
+# DBus-Actions - a tray application containing modules listening to dbus events
+# Copyright (C) 2009 by Stefan Schlott
+# Published under the GNU Public License V2 (GPL-2)
 
 
 class Module(object):
