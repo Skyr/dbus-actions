@@ -34,7 +34,7 @@ Writing your own modules
 
 Each module has its own subdirectory - either in the global module directory
 (located at /usr/share/dbusactions/modules) or the user's module directory
-(at $HOME/.dbusactions/modules).
+(at $HOME/.dbusactions).
 The subdirectory must contain a __init__.py file; this file must declare
 a class called Module, which must be derived from dbusactions.module.Module.
 With these requirements met, dbus-actions will find your module and list
