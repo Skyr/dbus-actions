@@ -1,0 +1,86 @@
+DBus-Actions - a tray application containing modules listening to dbus events
+Copyright (C) 2009 by Stefan Schlott
+Published under the GNU Public License V2 (GPL-2)
+
+About
+
+dbus is meant to easily interconnect desktop applications. But sometimes, you
+just want some convenience activities in response to some dbus events - but 
+there is no simple scripting possibility.
+dbus-actions tries to fill this gap. By writing a simple python module, you
+can extend dbus-actions with your own custom actions. Some modules for common
+applications (new hardware plugged in, dbus message display) are already
+included.
+dbus-actions shows up on the desktop as single icon in the notification area.
+Using a doppeldecker bus as icon seemed obvious (DBus -> Doppeldecker Bus) :-)
+
+
+Requirements
+
+dbus-actions is written in python/gtk an requires the gtk/gnome python
+bindings (pyobject, pygtk, dbus-python, gnome-python, gnome-python-extras).
+
+
+Running dbus-actions
+
+Without parameters, dbus-actions will start up and activate the modules
+last active. If no modules were active, the config dialog will show up. 
+"-d" will deactivate all modules (in case a module causes a fsckup, so
+you can deactivate it).
+"-v" will enable debug messages. 
+
+
+Writing your own modules
+
+Each module has its own subdirectory - either in the global module directory
+(located at /usr/share/dbusactions/modules) or the user's module directory
+(at $HOME/.dbusactions/modules).
+The subdirectory must contain a __init__.py file; this file must declare
+a class called Module, which must be derived from dbusactions.module.Module.
+With these requirements met, dbus-actions will find your module and list
+it in the config dialog, ready to be enabled.
+There are several variables you want to initialize in your own constructor -
+please refer to the documentation in dbusactions.module.Module.
+The class contains several methods you may want to override: isConfigurable
+and configureDialog if your module has a configuration dialog, and of course
+dbusSystemEvent/dbusSessionEvent for receiving and handling dbus messages.
+
+The simplest form of a module is probably the test module. It is not included
+in the plain source distribution - if you are writing a new module, you should
+thinking about contributing it, and in order to do so, you should work on
+a local Bazaar branch (see Contributing below).
+Try uncommenting one of the inferfaceList assignments in the constructor and
+see what's happening.
+Both the holux and the hwplug module are examples for capturing a single,
+specific message (hardware added, sent by the hal manager interface).
+Naturally, the debug module captures and processes all messages. 
+ 
+
+Contributing
+
+Bug fixes (can't be ;-)? New modules? Additional features?
+Great, send them in! This project uses Bazaar for source code management:
+  http://bazaar-vcs.org/
+The site provides several good tutorials, e.g.:
+  http://doc.bazaar-vcs.org/latest/en/mini-tutorial/index.html
+The executive summary of how to use this system goes as the following:
+- To get a branch to work on - run
+  bzr branch http://stefan.ploing.de/bzr/dbus-actions/trunk
+- Do your changes; commit your changes (locally, in your branch):
+  bzr commit
+- If your work takes really long, occasionally pull in changes from
+  the trunk
+  bzr merge
+- Finally, when you are done, create a patch file containing your
+  committed changes:
+  bzr send -o yourfile.patch
+  bzip2 it and mail it to me!
+
+
+Copyright and contributions
+
+dbus-action was started by Stefan Schlott.
+
+The doppeldecker icon is based on a Flickr picture by franckdethier:
+http://flickr.com/photos/picturesbypolo/2374686732/
+
