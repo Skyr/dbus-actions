@@ -97,7 +97,7 @@ class Tray:
         self.confAppKey = "/apps/dbus-actions"
         self.globalOptions = {
             "appDataPath" : appDataPath,
-            "localModulesDir" : os.path.join(os.getenv("HOME"),".dbus-actions"),
+            "localModulesDir" : os.path.join(os.getenv("HOME"),".dbusactions"),
         }
         self.globalOptions["globalModulesDir"]=os.path.join(self.globalOptions["appDataPath"],"modules")
         self.systemBus = dbus.SystemBus(mainloop=DBusGMainLoop())
