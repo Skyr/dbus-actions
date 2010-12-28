@@ -43,7 +43,7 @@ for m in find_data_files("modules","*.*"):
 
 setup(
     name="dbus-actions",
-    version="1.0",
+    version="1.0.1",
     description="Gnome application hosting small modules reacting on dbus messages",
     author="Stefan Schlott",
     author_email="stefan@ploing.de",

@@ -60,10 +60,20 @@ class Settings:
     def getSettings(self):
         self.eraseOnDevice = self.conf.get_bool(self.confAppKey+"/erase_on_device")
         self.downloadCmd = self.conf.get_string(self.confAppKey+"/download_cmd")
+        if not self.downloadCmd:
+            self.downloadCmd = "" 
         self.eraseCmd = self.conf.get_string(self.confAppKey+"/erase_cmd")
+        if not self.eraseCmd:
+            self.eraseCmd = ""
         self.dataPath = self.conf.get_string(self.confAppKey+"/data_path")
+        if not self.dataPath:
+            self.dataPath = os.path.expanduser("~")
         self.dataFilenameTemplate = self.conf.get_string(self.confAppKey+"/data_filename_template")
+        if not self.dataFilenameTemplate:
+            self.dataFilenameTemplate = "gpsdata-%Y%m%d.gpx"
         self.defaultDevice = self.conf.get_string(self.confAppKey+"/default_device")
+        if not self.defaultDevice:
+            self.defaultDevice=""
 
     def storeSettings(self):
         self.conf.set_bool(self.confAppKey+"/erase_on_device",self.eraseOnDevice)
