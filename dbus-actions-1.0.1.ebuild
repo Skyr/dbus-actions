@@ -6,11 +6,11 @@ inherit distutils
 
 DESCRIPTION="Gnome application hosting small modules reacting on dbus messages"
 HOMEPAGE="http://stefan.ploing.de/linux/dbus-actions/"
-SRC_URI="http://stefan.ploing.de/dist/dbus-actions/${P}.tar.gz"
+SRC_URI="http://repos.ploing.de/gentoo-files/${P}.tar.gz"
 
 LICENSE="GPL2"
 SLOT="0"
-KEYWORDS="x86"
+KEYWORDS="~x86 ~amd64"
 IUSE=""
 
 DEPEND="dev-python/pygobject
