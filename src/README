@@ -59,23 +59,10 @@ Naturally, the debug module captures and processes all messages.
 Contributing
 
 Bug fixes (can't be ;-)? New modules? Additional features?
-Great, send them in! This project uses Bazaar for source code management:
-  http://bazaar-vcs.org/
-The site provides several good tutorials, e.g.:
-  http://doc.bazaar-vcs.org/latest/en/mini-tutorial/index.html
-The executive summary of how to use this system goes as the following:
-- To get a branch to work on - run
-  bzr branch http://stefan.ploing.de/bzr/dbus-actions/trunk
-- Do your changes; commit your changes (locally, in your branch):
-  bzr commit
-- If your work takes really long, occasionally pull in changes from
-  the trunk
-  bzr merge
-- Finally, when you are done, create a patch file containing your
-  committed changes:
-  bzr send -o yourfile.patch
-  bzip2 it and mail it to me!
-
+Great, send them in! The project is now hosted on github:
+  https://github.com/Skyr/dbus-actions
+Simply fork the project (if you don't have an account for github, go
+get one), do your modifications and send me a pull request.
 
 Copyright and contributions
 
